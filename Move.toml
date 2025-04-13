@@ -1,0 +1,20 @@
+[package]
+name = "swap"
+version = "1.0.0"
+authors = []
+
+[addresses]
+admin = "b5f0f2ba807b33a0796c4fb83bc8fd1de0f53530ebbf6b60ba82c05bd49b12ff"
+dev = "0a6342aca08151a485e6872b1ee0dd5690169007b411855c3b95b640703291ec"
+swap = "928965b3cdbf05b312f773b869d69c036d45c10c6b7d9219708a43406f4c2fae"
+zero = "0000000000000000000000000000000000000000000000000000000000000000"
+user = "0x123"
+
+[dev-addresses]
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-framework.git"
+rev = "mainnet"
+subdir = "aptos-framework"
+
+[dev-dependencies]
