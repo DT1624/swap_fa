@@ -40,7 +40,7 @@ module swap::math {
         reserve_y: u64,
     ): u64 {
         assert!(reserve_x > 0 && reserve_y > 0, EINSUFFICIENT_LIQUIDITY);
-        assert!(amount_x > 0 && amount_x <= reserve_x, EINSUFFICIENT_INPUT_AMOUNT);
+        assert!(amount_x > 0, EINSUFFICIENT_INPUT_AMOUNT);
         let numerator: u128 = (amount_x as u128) * (reserve_y as u128);
         let denominator: u128 = (reserve_x as u128);
         ((numerator / denominator) as u64)
@@ -52,7 +52,7 @@ module swap::math {
         reserve_y: u64,
     ): u64 {
         assert!(reserve_x > 0 && reserve_y > 0, EINSUFFICIENT_LIQUIDITY);
-        assert!(amount_y > 0 && amount_y <= reserve_y, EINSUFFICIENT_INPUT_AMOUNT);
+        assert!(amount_y > 0, EINSUFFICIENT_INPUT_AMOUNT);
         let numerator: u128 = (amount_y as u128) * (reserve_x as u128);
         let denominator: u128 = (reserve_y as u128);
         ((numerator / denominator) as u64)

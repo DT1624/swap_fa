@@ -1,4 +1,4 @@
-module swap::swap_resource {
+module swap::swap_utils {
 
     use std::option::Option;
     use std::signer;
@@ -7,10 +7,11 @@ module swap::swap_resource {
     use aptos_std::smart_table::SmartTable;
     use aptos_std::smart_vector::singleton;
     use aptos_framework::fungible_asset;
-    use aptos_framework::fungible_asset::{Metadata, MintRef, BurnRef};
+    use aptos_framework::fungible_asset::{Metadata, MintRef, BurnRef, FungibleStore, TransferRef};
     use aptos_framework::object;
     use aptos_framework::object::{ConstructorRef, Object};
     use aptos_framework::primary_fungible_store;
+    use swap::swap_pool;
 
 
     /* constant parameters */
@@ -42,6 +43,13 @@ module swap::swap_resource {
     struct GlobalState has key {
         assets: AssetRegistry,
         pools: PoolRegistry,
+    }
+
+    // A struct to manage minting and burning activities
+    struct Management has key {
+        mint_ref: MintRef,
+        burn_ref: BurnRef,
+        transfer_ref: TransferRef,
     }
 
     fun init_module(admin: &signer) {
@@ -88,6 +96,16 @@ module swap::swap_resource {
 
         let addr: address = object::create_object_address(&signer::address_of(admin), symbol);
         add_fa_map(symbol, addr);
+
+        let manage_signer: signer = object::generate_signer(constructor_ref);
+        move_to(
+            &manage_signer,
+            Management {
+                mint_ref: fungible_asset::generate_mint_ref(constructor_ref),
+                burn_ref: fungible_asset::generate_burn_ref(constructor_ref),
+                transfer_ref: fungible_asset::generate_transfer_ref(constructor_ref)
+            }
+        );
     }
 
     public fun init_LP(
@@ -99,7 +117,7 @@ module swap::swap_resource {
         decimals: u8,
         icon_uri: vector<u8>,
         project_uri: vector<u8>,
-    ) acquires GlobalState {
+    ) {
         primary_fungible_store::create_primary_store_enabled_fungible_asset(
             constructor_ref,
             max_supply,
@@ -109,10 +127,6 @@ module swap::swap_resource {
             utf8(icon_uri),
             utf8(project_uri),
         );
-
-        let addr: address = object::create_object_address(&signer::address_of(admin), symbol);
-        add_fa_map(symbol, addr);
-        add_lp_map(symbol, signer::address_of(admin));
     }
 
     public fun resource_address(): address {
@@ -192,15 +206,36 @@ module swap::swap_resource {
         *borrow_global<GlobalState>(resource_address()).assets.lp_map.borrow(symbol)
     }
 
-    public fun get_addres_pa_x_y(pa: PairAsset): (address, address){
+    public fun get_addres_fa_x_y(pa: PairAsset): (address, address){
         (pa.token_x, pa.token_y)
+    }
+
+    public entry fun mint(sender: &signer, addr_fa: address, addr_to: address, amount: u64) acquires Management {
+        assert!(amount > 0, 1);
+        let fa_metadata: Object<Metadata> = get_object_metadata(addr_fa);
+
+        let mint_ref: &MintRef = &borrow_global<Management>(minter_address(sender, addr_fa)).mint_ref;
+        let store: Object<FungibleStore> = primary_fungible_store::ensure_primary_store_exists(
+            addr_to,
+            fa_metadata,
+        );
+
+        fungible_asset::mint_to(
+            mint_ref,
+            store,
+            amount
+        );
+    }
+
+    public fun minter_address(sender: &signer, fa_addr: address): address {
+        let symbol: vector<u8> = *get_symbol(fa_addr).bytes();
+        object::create_object_address(&signer::address_of(sender), symbol)
     }
 
 
 
-
     #[test_only]
-    public fun init_for_test_resource(admin: &signer) {
+    public fun init_for_test_untils(admin: &signer) {
         init_module(admin);
     }
 }
