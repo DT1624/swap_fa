@@ -15,9 +15,10 @@ module swap::math {
         assert!(reserve_in > 0 && reserve_out > 0, EINSUFFICIENT_LIQUIDITY);
         assert!(amount_out > 0 && amount_out < reserve_out, EINSUFFICIENT_INPUT_AMOUNT);
 
-        let amount_out_without_fee: u128 = (amount_out as u128) * PERCENT_WITHOUT_FEE;
+        let amount_out_without_fee: u128 = (amount_out as u128) * PERCENT_TOTAL;
         let numerator: u128 = amount_out_without_fee * (reserve_in as u128);
-        let denominator: u128 = (reserve_out as u128) * PERCENT_TOTAL - amount_out_without_fee;
+        let denominator: u128 = (reserve_out as u128) * PERCENT_WITHOUT_FEE - amount_out_without_fee;
+        numerator += denominator - 1;
         ((numerator / denominator) as u64)
     }
 

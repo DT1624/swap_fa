@@ -3,7 +3,6 @@ module swap::test_fa {
     use std::option;
     use swap::swap_pool;
     use swap::swap_utils;
-    use aptos_framework::coin;
 
     #[test_only(creator = @swap, user1 = @0x123, user2 = @0x234, user3 = @0x345)]
     public fun test_fa(creator: &signer, user1: &signer, user2: &signer, user3: &signer) {
